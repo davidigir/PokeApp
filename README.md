@@ -36,4 +36,4 @@ PokeApp es una aplicación Android desarrollada con Jetpack Compose que permite 
 
 📷 Capturas
 
-<img width="1080" height="2400" alt="Screenshot_20251115_183428" src="https://github.com/user-attachments/assets/aeaed3a8-6b85-404b-949d-563101a9b481" />
+<img src="https://github.com/user-attachments/assets/aeaed3a8-6b85-404b-949d-563101a9b481" width="540"/>
