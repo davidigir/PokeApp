@@ -1,34 +1,24 @@
 package com.dig.pokeapp.viewmodel
 
-import android.app.Application
-import android.util.Log
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
-import coil.Coil.imageLoader
 import coil.ImageLoader
-import coil.request.ImageRequest
-import com.dig.pokeapp.data.model.Pokemon
-import com.dig.pokeapp.data.network.RetrofitClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import com.dig.pokeapp.data.entity.PokemonEntity
+import com.dig.pokeapp.data.repository.PokemonRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.lang.Exception
+import javax.inject.Inject
 
 sealed class PokemonUiState {
     object Loading : PokemonUiState()
     data class Success(
-        val pokemonList: List<Pokemon>,
-        val pokemonFilteredList: List<Pokemon>,
+        val pokemonList: List<PokemonEntity>,
+        val pokemonFilteredList: List<PokemonEntity>,
         val searchQuery: String = ""
     ) : PokemonUiState()
 
@@ -36,7 +26,10 @@ sealed class PokemonUiState {
 
 }
 
-class PokemonViewModel(
+@HiltViewModel
+class PokemonViewModel @Inject constructor(
+    private val repository: PokemonRepository,
+    val imageLoader: ImageLoader
 ) : ViewModel() {
 
     private val _UiState = MutableStateFlow<PokemonUiState>(PokemonUiState.Loading)
@@ -46,17 +39,8 @@ class PokemonViewModel(
         _UiState.value = PokemonUiState.Loading
         viewModelScope.launch {
             try {
-                //Multihilo para q haga varias llamadas a la API
-                val detailList = coroutineScope {
-                    (1..151).map { id ->
-                        Log.d("PokemonViewModel", "Pokemon agregado: ${id}")
+                val detailList= repository.getPokemon()
 
-                        async {
-                            RetrofitClient.api.getPokemonById(id)
-                        }
-                    }.awaitAll() // Espera que todas terminen
-
-                }
 
                 _UiState.value = PokemonUiState.Success(
                     pokemonList = detailList,
@@ -90,9 +74,6 @@ class PokemonViewModel(
 
     }
 
-    init {
-        fetchPokemonList()
-    }
 
 
 }
